@@ -5,3 +5,5 @@ capture_admin_screenshots.js
 fetch_cars.py
 sentimock.py
 capture_sentiment_screenshot.js
+capture_frontend_screenshots_part2.js
+capture_frontend_screenshots.js
