@@ -3,3 +3,5 @@ capture_screenshots.js
 test_dealer_api.py
 capture_admin_screenshots.js
 fetch_cars.py
+sentimock.py
+capture_sentiment_screenshot.js

@@ -16,8 +16,8 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import CarMake, CarModel
 from .populate import initiate
 # from .populate import initiate
-import requests
 import os
+from .restapis import get_request, analyze_review_sentiments, post_review
 
 def get_cars(request):
     count = CarMake.objects.filter().count()
@@ -100,12 +100,7 @@ def get_dealerships(request, state="All"):
         endpoint = "/fetchDealers"
     else:
         endpoint = "/fetchDealers/"+state
-    dealerships = []
-    try: 
-        response = requests.get(request_url + endpoint)
-        dealerships = response.json()
-    except Exception as e:
-        print(e)
+    dealerships = get_request(endpoint)
     return JsonResponse({"status":200,"dealers":dealerships})
 
 # Create a `get_dealer_reviews` view to render the reviews of a dealer
@@ -113,12 +108,11 @@ def get_dealer_reviews(request, dealer_id):
     # if dealer id has been provided
     if(dealer_id):
         endpoint = "/fetchReviews/dealer/"+str(dealer_id)
-        reviews = []
-        try:
-            response = requests.get(request_url + endpoint)
-            reviews = response.json()
-        except Exception as e:
-            print(e)
+        reviews = get_request(endpoint)
+        for review_detail in reviews:
+            response = analyze_review_sentiments(review_detail['review'])
+            print(response)
+            review_detail['sentiment'] = response['sentiment']
         return JsonResponse({"status":200,"reviews":reviews})
     else:
         return JsonResponse({"status":400,"message":"Bad Request"})
@@ -127,12 +121,7 @@ def get_dealer_reviews(request, dealer_id):
 def get_dealer_details(request, dealer_id):
     if(dealer_id):
         endpoint = "/fetchDealer/"+str(dealer_id)
-        dealership = []
-        try:
-            response = requests.get(request_url + endpoint)
-            dealership = response.json()
-        except Exception as e:
-            print(e)
+        dealership = get_request(endpoint)
         return JsonResponse({"status":200,"dealer":dealership})
     else:
         return JsonResponse({"status":400,"message":"Bad Request"})
@@ -142,8 +131,9 @@ def add_review(request):
     if(request.user.is_anonymous == False):
         data = json.loads(request.body)
         try:
-            response = requests.post(request_url+"/insert_review",json=data)
-            print(response.json())
+            response = post_review(data)
+            return JsonResponse({"status":200})
         except:
-            print("an error occurred")
-    return JsonResponse({"status":200})
+            return JsonResponse({"status":401,"message":"Error in posting review"})
+    else:
+        return JsonResponse({"status":403,"message":"Unauthorized"})
