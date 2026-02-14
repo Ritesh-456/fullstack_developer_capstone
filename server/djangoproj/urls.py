@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, RedirectView
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -27,4 +27,9 @@ urlpatterns = [
     path('contact/', TemplateView.as_view(template_name="Contact.html")),
     path('login/', TemplateView.as_view(template_name="index.html")),
     path('register/', TemplateView.as_view(template_name="index.html")),
+    path('manifest.json', TemplateView.as_view(template_name="manifest.json", content_type='application/json')),
+    path('logo192.png', RedirectView.as_view(url=settings.STATIC_URL + 'logo192.png')),
+    path('logo512.png', RedirectView.as_view(url=settings.STATIC_URL + 'logo512.png')),
+    path('favicon.ico', RedirectView.as_view(url=settings.STATIC_URL + 'favicon.ico')),
+    path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type='text/plain')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
